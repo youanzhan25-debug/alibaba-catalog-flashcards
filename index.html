@@ -205,10 +205,10 @@ footer{text-align:center;font-size:11px;color:#5f7290;margin-top:14px;letter-spa
   <div class="controls">
     <button class="ctrl-btn small" id="prevBtn">◀</button>
     <button class="ctrl-btn primary" id="nextBtn">下一张 ▶</button>
-    <button class="ctrl-btn small" id="randBtn" title="随机跳转">🎲</button>
+    <button class="ctrl-btn small" id="langBtn" title="中英文图片转换">中</button>
   </div>
 
-  <footer>数据：国际站类目完整手册（一级→二级→三级）· 点 🔊 逐词跟读，单词间隔 1 秒 · 点击卡片翻面</footer>
+  <footer>数据：国际站类目完整手册（一级→二级→三级）· 点 🔊 逐词跟读 · 点击卡片翻面 · 右下角按钮中英文图片转换</footer>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -239,7 +239,7 @@ var elCornerFront=$("cornerFront"), elFrontHint=$("frontHint"), elFrontPathLabel
 var elFrontImgWrap=$("frontImgWrap"), elFrontImg=$("frontImg"), elWatermark=$("watermark");
 var elPfill=$("pfill"), elPcur=$("pcur"), elPinfo=$("pinfo");
 var elChips=$("chips"), elModeBtn=$("modeBtn"), elOrderBtn=$("orderBtn"), elAutoBtn=$("autoBtn");
-var elSpeak=$("speakBtn"), elPrev=$("prevBtn"), elNext=$("nextBtn"), elRand=$("randBtn");
+var elSpeak=$("speakBtn"), elPrev=$("prevBtn"), elNext=$("nextBtn"), elLang=$("langBtn");
 var elToast=$("toast");
 
 /* ---------- 语音 ---------- */
@@ -431,6 +431,7 @@ function render(){
     : '<span class="tag">'+esc(r.l1zh)+'</span><span class="tag">'+esc(r.l2zh)+'</span>';
   elTagsBack.innerHTML  = '<span class="tag acc">'+esc(r.l3en)+'</span>';
   elCornerFront.textContent = en2zh ? "英 → 中" : "中 → 英";
+  updateLangBtn();
   if (r.img){
     elFrontImgWrap.classList.remove("hide");
     elFrontImg.src = r.img;
@@ -531,14 +532,17 @@ elPrev.addEventListener("click", function(){
   render();
   if (state.autoOn) scheduleAuto();
 });
-elRand.addEventListener("click", function(){
+elLang.addEventListener("click", function(){
   stopSpeaking();
-  state.idx = Math.floor(Math.random()*state.deck.length);
-  state.flipped = false;
-  elCard.classList.remove("flip");
+  state.mode = state.mode === "en2zh" ? "zh2en" : "en2zh";
+  elModeBtn.textContent = state.mode === "en2zh" ? "EN → 中" : "中 → EN";
+  if (state.flipped){ elCard.classList.remove("flip"); state.flipped = false; }
   render();
-  if (state.autoOn) scheduleAuto();
 });
+function updateLangBtn(){
+  elLang.textContent = state.mode === "en2zh" ? "中" : "EN";
+  elLang.title = state.mode === "en2zh" ? "切换为中文+图片" : "切换为英文+图片";
+}
 elModeBtn.addEventListener("click", function(){
   stopSpeaking();
   state.mode = state.mode==="en2zh" ? "zh2en" : "en2zh";
