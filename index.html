@@ -298,6 +298,12 @@ function pickVoice(lang){
 function stopSpeaking(){
   speakGen++;
   if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (audioBusy){
+    audioBusy = false;
+    audioEl.pause();
+    audioEl.onended = audioEl.onerror = audioEl.oncanplay = null;
+    audioEl.removeAttribute("src");
+  }
   elSpeak.classList.remove("speaking");
 }
 /* 整句朗读（中文等） */
@@ -374,16 +380,55 @@ function splitGroups(en){
     return g.replace(/\s+/g, " ").trim();
   }).filter(function(g){ return g.length > 0; });
 }
+var audioEl = new Audio();
+var audioBusy = false;
+function pad5(n){ return ("00000"+n).slice(-5); }
+function playAudio(url, onOk, onFail){
+  audioBusy = true;
+  elSpeak.classList.add("speaking");
+  var finished = false;
+  function done(ok){
+    if (finished) return;
+    finished = true;
+    audioBusy = false;
+    elSpeak.classList.remove("speaking");
+    audioEl.onended = audioEl.onerror = audioEl.oncanplay = null;
+    audioEl.removeAttribute("src");
+    if (ok && onOk) onOk();
+    else if (!ok && onFail) onFail();
+  }
+  audioEl.onended = function(){ done(true); };
+  audioEl.onerror = function(){ done(false); };
+  audioEl.oncanplay = function(){
+    audioEl.play().catch(function(){ done(false); });
+  };
+  audioEl.src = url;
+  setTimeout(function(){
+    if (!finished && audioEl.readyState < 3){ done(false); }
+  }, 4000);
+}
 function speakCurrent(onDone){
   var r = ALL[state.deck[state.idx]];
   if (!r) return;
+  var idx = state.deck[state.idx];
+  var isEn;
   if (state.flipped){
-    if (state.mode==="en2zh"){ speakText(r.l1zh+"，"+r.l2zh+"，"+r.l3zh, "zh-CN", onDone); }
-    else { speakByGroups(splitGroups(r.l1en+" "+r.l2en+" "+r.l3en), "en-GB", onDone); }
+    isEn = state.mode !== "en2zh";
   } else {
-    if (state.mode==="en2zh"){ speakByGroups(splitGroups(r.l3en), "en-GB", onDone); }
-    else { speakText(r.l3zh, "zh-CN", onDone); }
+    isEn = state.mode === "en2zh";
   }
+  if (!isEn){
+    if (state.flipped){ speakText(r.l1zh+"，"+r.l2zh+"，"+r.l3zh, "zh-CN", onDone); }
+    else { speakText(r.l3zh, "zh-CN", onDone); }
+    return;
+  }
+  /* 英文：优先播放预生成音频（微信内也可发声），失败回退 TTS */
+  stopSpeaking();
+  var url = "audio/" + pad5(idx) + ".m4a";
+  playAudio(url, function(){ if (onDone) onDone(); }, function(){
+    if (state.flipped){ speakByGroups(splitGroups(r.l1en+" "+r.l2en+" "+r.l3en), "en-GB", onDone); }
+    else { speakByGroups(splitGroups(r.l3en), "en-GB", onDone); }
+  });
 }
 
 /* ---------- 筛选 chips ---------- */
