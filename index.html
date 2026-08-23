@@ -143,6 +143,7 @@ header p{font-size:12px;color:#9fb2cc;margin-top:4px;}
 .ctrl-btn:active{transform:scale(.95);}
 .ctrl-btn.primary{background:linear-gradient(135deg,var(--acc) 0%,var(--acc-deep) 100%);box-shadow:0 8px 20px rgba(232,93,31,.35);}
 .ctrl-btn.small{flex:0 0 auto;width:52px;border-radius:16px;}
+#langBtn{font-size:12px;font-weight:800;letter-spacing:.5px;}
 
 /* ---------- 提示条 ---------- */
 .toast{
@@ -205,7 +206,7 @@ footer{text-align:center;font-size:11px;color:#5f7290;margin-top:14px;letter-spa
   <div class="controls">
     <button class="ctrl-btn small" id="prevBtn">◀</button>
     <button class="ctrl-btn primary" id="nextBtn">下一张 ▶</button>
-    <button class="ctrl-btn small" id="langBtn" title="中英文图片转换">中</button>
+    <button class="ctrl-btn small" id="langBtn" title="中英文图片转换">中⇄EN</button>
   </div>
 
   <footer>数据：国际站类目完整手册（一级→二级→三级）· 点 🔊 逐词跟读 · 点击卡片翻面 · 右下角按钮中英文图片转换</footer>
@@ -540,8 +541,7 @@ elLang.addEventListener("click", function(){
   render();
 });
 function updateLangBtn(){
-  elLang.textContent = state.mode === "en2zh" ? "中" : "EN";
-  elLang.title = state.mode === "en2zh" ? "切换为中文+图片" : "切换为英文+图片";
+  elLang.title = state.mode === "en2zh" ? "切换为中文+图片（当前英文）" : "切换为英文+图片（当前中文）";
 }
 elModeBtn.addEventListener("click", function(){
   stopSpeaking();
