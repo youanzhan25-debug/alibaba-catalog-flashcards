@@ -160,6 +160,15 @@ header p{font-size:12px;color:#9fb2cc;margin-top:4px;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 footer{text-align:center;font-size:11px;color:#5f7290;margin-top:14px;letter-spacing:.5px;}
+.tts-banner{
+  display:flex;align-items:flex-start;gap:8px;margin:8px 0 4px;padding:10px 12px;
+  background:linear-gradient(135deg,#fff7e6 0%,#ffefd2 100%);
+  border:1px solid rgba(217,164,65,.5);border-radius:12px;
+  font-size:12.5px;line-height:1.6;color:#6b5310;
+}
+.tts-banner.hide{display:none;}
+.tts-banner b{color:#a05a00;}
+.tts-banner .x{margin-left:auto;flex:none;background:none;border:none;font-size:14px;color:#a08a55;cursor:pointer;padding:0 2px;}
 </style>
 </head>
 <body>
@@ -168,6 +177,11 @@ footer{text-align:center;font-size:11px;color:#5f7290;margin-top:14px;letter-spa
     <h1>国际站类目<span class="dot">闪卡</span></h1>
     <p id="statLine">38 个一级 · 408 个二级 · 3291 个三级类目</p>
   </header>
+
+  <div class="tts-banner hide" id="ttsBanner">
+    <div>📢 当前浏览器<span style="color:#c0392b">不支持朗读</span>。<br>请在页面右上角点 <b>「···」→「在浏览器中打开」</b>，或用 <b>Safari / Chrome</b> 打开本链接，即可获得英式发音朗读；<b>添加到主屏幕</b>后从图标进入效果最佳。<br>（微信内置浏览器会屏蔽朗读功能）</div>
+    <button class="x" id="ttsClose">✕</button>
+  </div>
 
   <div class="toolbar">
     <button class="btn" id="modeBtn" title="切换卡片朝向">EN → 中</button>
@@ -288,7 +302,7 @@ function stopSpeaking(){
 }
 /* 整句朗读（中文等） */
 function speakText(text, lang, onDone){
-  if (!("speechSynthesis" in window)){ toast("当前浏览器不支持朗读"); if (onDone) onDone(); return; }
+  if (!("speechSynthesis" in window)){ toast("此浏览器不支持朗读，请点右上角···在浏览器中打开"); if (onDone) onDone(); return; }
   var gen = ++speakGen;
   speechSynthesis.cancel();
   var u = new SpeechSynthesisUtterance(text);
@@ -313,7 +327,7 @@ function speakText(text, lang, onDone){
 /* 朗读分组：按 & 拆分，组内连读（词组），组间间隔 SPEAK_GAP */
 function speakByGroups(groups, lang, onDone){
   if (!groups.length){ if (onDone) onDone(); return; }
-  if (!("speechSynthesis" in window)){ toast("当前浏览器不支持朗读"); if (onDone) onDone(); return; }
+  if (!("speechSynthesis" in window)){ toast("此浏览器不支持朗读，请点右上角···在浏览器中打开"); if (onDone) onDone(); return; }
   var gen = ++speakGen;
   speechSynthesis.cancel();
   var i = 0;
@@ -572,6 +586,14 @@ elOrderBtn.addEventListener("click", function(){
 });
 elAutoBtn.addEventListener("click", toggleAuto);
 
+var elTtsBanner=$("ttsBanner"), elTtsClose=$("ttsClose");
+function checkTTS(){
+  if (!("speechSynthesis" in window)){
+    elTtsBanner.classList.remove("hide");
+  }
+}
+elTtsClose.addEventListener("click", function(){ elTtsBanner.classList.add("hide"); });
+
 document.addEventListener("visibilitychange", function(){
   if (document.hidden) stopSpeaking();
 });
@@ -595,6 +617,7 @@ function toast(msg){
 /* ---------- 启动 ---------- */
 buildChips();
 buildDeck();
+checkTTS();
 })();
 </script>
 </body>
